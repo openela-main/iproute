@@ -1,0 +1,65 @@
+From 80e59389e93bf3f45204a38536f3f228adf153c7 Mon Sep 17 00:00:00 2001
+Message-Id: <80e59389e93bf3f45204a38536f3f228adf153c7.1686076455.git.aclaudi@redhat.com>
+In-Reply-To: <d60a7ac3c0f6aa2a933f48a69ab31e3637f6906c.1686076455.git.aclaudi@redhat.com>
+References: <d60a7ac3c0f6aa2a933f48a69ab31e3637f6906c.1686076455.git.aclaudi@redhat.com>
+From: Andrea Claudi <aclaudi@redhat.com>
+Date: Tue, 6 Jun 2023 20:05:15 +0200
+Subject: [PATCH] u32: fix TC_U32_TERMINAL printing
+
+Jira: https://issues.redhat.com/browse/RHEL-337
+Upstream Status: iproute2-next.git commit 2854d69a
+
+commit 2854d69a99f6e38d0d2426bd641a56d7a85bc61b
+Author: Hangbin Liu <liuhangbin@gmail.com>
+Date:   Wed Mar 1 22:21:00 2023 +0800
+
+    u32: fix TC_U32_TERMINAL printing
+
+    We previously printed an asterisk if there was no 'sel' or
+    'TC_U32_TERMINAL' flag. However,
+     commit 1ff227545ce1 ("u32: fix json formatting of flowid")
+    changed the logic to print an asterisk only if there is a
+    'TC_U32_TERMINAL' flag. Therefore, we need to fix this
+    regression.
+
+    Before the fix, the tdc u32 test failed:
+
+    1..11
+    not ok 1 afa9 - Add u32 with source match
+            Could not match regex pattern. Verify command output:
+    filter protocol ip pref 1 u32 chain 0
+    filter protocol ip pref 1 u32 chain 0 fh 800: ht divisor 1
+    filter protocol ip pref 1 u32 chain 0 fh 800::800 order 2048 key ht 800 bkt 0 *flowid 1:1 not_in_hw
+      match 7f000001/ffffffff at 12
+            action order 1: gact action pass
+             random type none pass val 0
+             index 1 ref 1 bind 1
+
+    After fix, the test passed:
+    1..11
+    ok 1 afa9 - Add u32 with source match
+
+    Fixes: 1ff227545ce1 ("u32: fix json formatting of flowid")
+    Signed-off-by: Hangbin Liu <liuhangbin@gmail.com>
+    Reviewed-by: Victor Nogueira <victor@mojatatu.com>
+    Signed-off-by: Stephen Hemminger <stephen@networkplumber.org>
+---
+ tc/f_u32.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/tc/f_u32.c b/tc/f_u32.c
+index bfe9e5f9..de2d0c9e 100644
+--- a/tc/f_u32.c
++++ b/tc/f_u32.c
+@@ -1273,7 +1273,7 @@ static int u32_print_opt(struct filter_util *qu, FILE *f, struct rtattr *opt,
+ 	if (tb[TCA_U32_CLASSID]) {
+ 		__u32 classid = rta_getattr_u32(tb[TCA_U32_CLASSID]);
+ 		SPRINT_BUF(b1);
+-		if (sel && (sel->flags & TC_U32_TERMINAL))
++		if (!sel || !(sel->flags & TC_U32_TERMINAL))
+ 			print_string(PRINT_FP, NULL, "*", NULL);
+ 
+ 		print_string(PRINT_ANY, "flowid", "flowid %s ",
+-- 
+2.40.1
+
