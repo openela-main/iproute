@@ -1,0 +1,43 @@
+From 4c2e1768c0d446345796dc058d1e114147a1029a Mon Sep 17 00:00:00 2001
+Message-Id: <4c2e1768c0d446345796dc058d1e114147a1029a.1686090191.git.aclaudi@redhat.com>
+In-Reply-To: <6a3ecf4fd80f7dcecb72b6c83781f5aed463a75b.1686090191.git.aclaudi@redhat.com>
+References: <6a3ecf4fd80f7dcecb72b6c83781f5aed463a75b.1686090191.git.aclaudi@redhat.com>
+From: Andrea Claudi <aclaudi@redhat.com>
+Date: Wed, 7 Jun 2023 00:15:59 +0200
+Subject: [PATCH] tc: add missing separator
+
+Jira: https://issues.redhat.com/browse/RHEL-487
+Upstream Status: iproute2-next.git commit 4e0e56e0
+
+commit 4e0e56e0ef05387f7f5d8ab41fe6ec6a1897b26d
+Author: Christian Hesse <mail@eworm.de>
+Date:   Thu Feb 23 11:15:03 2023 +0100
+
+    tc: add missing separator
+
+    This is missing a separator, that was accidently removed
+    when JSON was added.
+
+    Fixes: 010a8388aea1 ("tc: Add JSON output to tc-class")
+    Signed-off-by: Christian Hesse <mail@eworm.de>
+    Signed-off-by: Stephen Hemminger <stephen@networkplumber.org>
+---
+ tc/tc_class.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/tc/tc_class.c b/tc/tc_class.c
+index c1feb009..096fa2ec 100644
+--- a/tc/tc_class.c
++++ b/tc/tc_class.c
+@@ -356,7 +356,7 @@ int print_class(struct nlmsghdr *n, void *arg)
+ 		print_string(PRINT_ANY, "parent", "parent %s ", abuf);
+ 	}
+ 	if (t->tcm_info)
+-		print_0xhex(PRINT_ANY, "leaf", "leaf %x", t->tcm_info>>16);
++		print_0xhex(PRINT_ANY, "leaf", "leaf %x: ", t->tcm_info>>16);
+ 
+ 	q = get_qdisc_kind(RTA_DATA(tb[TCA_KIND]));
+ 	if (tb[TCA_OPTIONS]) {
+-- 
+2.40.1
+

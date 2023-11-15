@@ -1,0 +1,52 @@
+From d59fc35f66f5d0d6e7b3209c21f2c891a2ba0768 Mon Sep 17 00:00:00 2001
+Message-ID: <d59fc35f66f5d0d6e7b3209c21f2c891a2ba0768.1695227714.git.aclaudi@redhat.com>
+In-Reply-To: <6a3ecf4fd80f7dcecb72b6c83781f5aed463a75b.1695227714.git.aclaudi@redhat.com>
+References: <6a3ecf4fd80f7dcecb72b6c83781f5aed463a75b.1695227714.git.aclaudi@redhat.com>
+From: Andrea Claudi <aclaudi@redhat.com>
+Date: Tue, 5 Sep 2023 12:44:19 +0200
+Subject: [PATCH] ss: make SELinux stub functions conformant to API definitions
+
+Bugzilla: https://bugzilla.redhat.com/show_bug.cgi?id=1780023
+Upstream Status: iproute2-next.git commit 61c6882c
+
+commit 61c6882ce21c1247c06cd61783120be0a2e2019c
+Author: Andrea Claudi <aclaudi@redhat.com>
+Date:   Wed Aug 23 19:30:00 2023 +0200
+
+    ss: make SELinux stub functions conformant to API definitions
+
+    getfilecon() and security_get_initial_context() use the const qualifier
+    for their first paramater in SELinux APIs.
+
+    This commit adds the const qualifier to these functions, making them
+    conformant to API definitions.
+
+    Signed-off-by: Andrea Claudi <aclaudi@redhat.com>
+    Signed-off-by: David Ahern <dsahern@kernel.org>
+---
+ misc/ss.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/misc/ss.c b/misc/ss.c
+index d2dffbf8..fe19f489 100644
+--- a/misc/ss.c
++++ b/misc/ss.c
+@@ -86,13 +86,13 @@ static int getpidcon(pid_t pid, char **context)
+ 	return -1;
+ }
+ 
+-static int getfilecon(char *path, char **context)
++static int getfilecon(const char *path, char **context)
+ {
+ 	*context = NULL;
+ 	return -1;
+ }
+ 
+-static int security_get_initial_context(char *name,  char **context)
++static int security_get_initial_context(const char *name,  char **context)
+ {
+ 	*context = NULL;
+ 	return -1;
+-- 
+2.41.0
+
