@@ -1,0 +1,38 @@
+From d60a7ac3c0f6aa2a933f48a69ab31e3637f6906c Mon Sep 17 00:00:00 2001
+Message-Id: <d60a7ac3c0f6aa2a933f48a69ab31e3637f6906c.1683109787.git.aclaudi@redhat.com>
+From: Andrea Claudi <aclaudi@redhat.com>
+Date: Wed, 3 May 2023 11:19:24 +0200
+Subject: [PATCH] Update kernel headers
+
+Bugzilla: https://bugzilla.redhat.com/show_bug.cgi?id=2186945
+Upstream Status: iproute2-next.git commit 88786cd1
+
+commit 88786cd1a96a89427bc22061c7736eb2eac31121
+Author: David Ahern <dsahern@kernel.org>
+Date:   Thu Mar 30 09:43:49 2023 -0600
+
+    Update kernel headers
+
+    Update kernel headers to commit:
+        da617cd8d906 ("smsc911x: remove superfluous variable init")
+
+    Signed-off-by: David Ahern <dsahern@kernel.org>
+---
+ include/uapi/linux/if_link.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/include/uapi/linux/if_link.h b/include/uapi/linux/if_link.h
+index 147ad0a3..644d3554 100644
+--- a/include/uapi/linux/if_link.h
++++ b/include/uapi/linux/if_link.h
+@@ -628,6 +628,7 @@ enum {
+ 	IFLA_MACVLAN_MACADDR_COUNT,
+ 	IFLA_MACVLAN_BC_QUEUE_LEN,
+ 	IFLA_MACVLAN_BC_QUEUE_LEN_USED,
++	IFLA_MACVLAN_BC_CUTOFF,
+ 	__IFLA_MACVLAN_MAX,
+ };
+ 
+-- 
+2.40.1
+

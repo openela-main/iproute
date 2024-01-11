@@ -1,0 +1,69 @@
+From ad96352bfdc2865237beca32fd7d50cfef3e75c7 Mon Sep 17 00:00:00 2001
+From: Wen Liang <wenliang@redhat.com>
+Date: Thu, 1 Jun 2023 10:33:46 -0400
+Subject: [PATCH] mptcp: add support for implicit flag
+
+Bugzilla: https://bugzilla.redhat.com/show_bug.cgi?id=2109135
+Upstream Status: iproute2-next.git commit 3a2535a4
+
+commit 3a2535a41854d481c1a052e267d1fe5d83f9493c
+Author: Andrea Claudi <aclaudi@redhat.com>
+Date:   Tue May 16 11:48:04 2023 +0200
+
+    mptcp: add support for implicit flag
+
+    Kernel supports implicit flag since commit d045b9eb95a9 ("mptcp:
+    introduce implicit endpoints"), included in v5.18.
+
+    Let's add support for displaying it to iproute2.
+
+    Before this change:
+    $ ip mptcp endpoint show
+    10.0.2.2 id 1 rawflags 10
+
+    After this change:
+    $ ip mptcp endpoint show
+    10.0.2.2 id 1 implicit
+
+    Signed-off-by: Andrea Claudi <aclaudi@redhat.com>
+    Signed-off-by: David Ahern <dsahern@kernel.org>
+---
+ ip/ipmptcp.c        | 1 +
+ man/man8/ip-mptcp.8 | 9 +++++++++
+ 2 files changed, 10 insertions(+)
+
+diff --git a/ip/ipmptcp.c b/ip/ipmptcp.c
+index beba7a41..9847f95b 100644
+--- a/ip/ipmptcp.c
++++ b/ip/ipmptcp.c
+@@ -58,6 +58,7 @@ static const struct {
+ 	{ "subflow",		MPTCP_PM_ADDR_FLAG_SUBFLOW },
+ 	{ "backup",		MPTCP_PM_ADDR_FLAG_BACKUP },
+ 	{ "fullmesh",		MPTCP_PM_ADDR_FLAG_FULLMESH },
++	{ "implicit",		MPTCP_PM_ADDR_FLAG_IMPLICIT },
+ 	{ "nobackup",		MPTCP_PM_ADDR_FLAG_NONE },
+ 	{ "nofullmesh",		MPTCP_PM_ADDR_FLAG_NONE }
+ };
+diff --git a/man/man8/ip-mptcp.8 b/man/man8/ip-mptcp.8
+index 72762f49..b427065c 100644
+--- a/man/man8/ip-mptcp.8
++++ b/man/man8/ip-mptcp.8
+@@ -176,6 +176,15 @@ endpoint. When the peer does announce addresses, each received ADD_ADDR
+ sub-option will trigger creation of an additional subflow to generate a
+ full mesh topology.
+ 
++.TP
++.BR implicit
++In some scenarios, an MPTCP
++.BR subflow
++can use a local address mapped by a implicit endpoint created by the
++in-kernel path manager. Once set, the implicit flag cannot be removed, but
++other flags can be added to the endpoint. Implicit endpoints cannot be
++created from user-space.
++
+ .sp
+ .PP
+ The
+-- 
+2.38.1
+

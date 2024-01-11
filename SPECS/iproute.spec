@@ -1,15 +1,20 @@
 Summary:            Advanced IP routing and network device configuration tools
 Name:               iproute
-Version:            6.1.0
-Release:            1%{?dist}%{?buildid}
+Version:            6.2.0
+Release:            5%{?dist}%{?buildid}
 %if 0%{?rhel}
 Group:              Applications/System
 %endif
 URL:                https://kernel.org/pub/linux/utils/net/%{name}2/
 Source0:            https://kernel.org/pub/linux/utils/net/%{name}2/%{name}2-%{version}.tar.xz
 Source1:            rt_dsfield.deprecated
+Patch0:             0001-Update-kernel-headers.patch
+Patch1:             0002-macvlan-Add-bclim-parameter.patch
+Patch2:             0003-mptcp-add-support-for-implicit-flag.patch
+Patch3:             0004-u32-fix-TC_U32_TERMINAL-printing.patch
+Patch4:             0005-tc-add-missing-separator.patch
 
-License:            GPLv2+ and Public Domain
+License:            GPL-2.0-or-later AND NIST-PD
 BuildRequires:      bison
 BuildRequires:      elfutils-libelf-devel
 BuildRequires:      flex
@@ -41,7 +46,7 @@ Summary:            Linux Traffic Control utility
 %if 0%{?rhel}
 Group:              Applications/System
 %endif
-License:            GPLv2+
+License:            GPL-2.0-or-later
 Requires:           %{name}%{?_isa} = %{version}-%{release}
 Provides:           /sbin/tc
 
@@ -56,7 +61,7 @@ Summary:            Documentation for iproute2 utilities with examples
 %if 0%{?rhel}
 Group:              Applications/System
 %endif
-License:            GPLv2+
+License:            GPL-2.0-or-later
 Requires:           %{name} = %{version}-%{release}
 
 %description doc
@@ -68,7 +73,7 @@ Summary:            iproute development files
 %if 0%{?rhel}
 Group:              Development/Libraries
 %endif
-License:            GPLv2+
+License:            GPL-2.0-or-later
 Requires:           %{name} = %{version}-%{release}
 Provides:           iproute-static = %{version}-%{release}
 
@@ -79,12 +84,11 @@ The libnetlink static library.
 %autosetup -p1 -n %{name}2-%{version}
 
 %build
-%configure
+%configure --libdir %{_libdir}
+echo -e "\nPREFIX=%{_prefix}\nCONFDIR:=%{_sysconfdir}/iproute2\nSBINDIR=%{_sbindir}" >> config.mk
 %make_build
 
 %install
-export SBINDIR='%{_sbindir}'
-export LIBDIR='%{_libdir}'
 %make_install
 
 echo '.so man8/tc-cbq.8' > %{buildroot}%{_mandir}/man8/cbq.8
@@ -140,6 +144,23 @@ cat %{SOURCE1} >>%{buildroot}%{_sysconfdir}/iproute2/rt_dsfield
 %{_includedir}/iproute2/bpf_elf.h
 
 %changelog
+* Tue Jun 06 2023 Andrea Claudi <aclaudi@redhat.com> - 6.2.0-5.el9
+- tc: add missing separator (Andrea Claudi) [RHEL-337]
+- u32: fix TC_U32_TERMINAL printing (Andrea Claudi) [RHEL-586]
+
+* Mon Jun 05 2023 Andrea Claudi <aclaudi@redhat.com> - 6.2.0-4.el9
+- Fix NVR, %autorelease not working (Andrea Claudi)
+
+* Thu Jun 01 2023 Wen Liang <wenliang@redhat.com> - 6.2.0-3.el9
+- mptcp: add support for implicit flag (Wen Liang) [2109135]
+
+* Wed May 03 2023 Andrea Claudi <aclaudi@redhat.com> - 6.2.0-2.el9
+- macvlan: Add bclim parameter (Andrea Claudi) [2186945]
+- Update kernel headers (Andrea Claudi) [2186945]
+
+* Thu Apr 27 2023 Andrea Claudi <aclaudi@redhat.com> - 6.2.0-1.el9
+- New version 6.2.0 (Andrea Claudi) [RHEL-428]
+
 * Sat Jan 28 2023 Andrea Claudi <aclaudi@redhat.com> - 6.1.0-1.el9
 - New version 6.1.0 [2155604]
 
