@@ -1,0 +1,156 @@
+From 0e71f7774a764c0a19037b79b71d7146769082ac Mon Sep 17 00:00:00 2001
+Message-ID: <0e71f7774a764c0a19037b79b71d7146769082ac.1695227714.git.aclaudi@redhat.com>
+In-Reply-To: <6a3ecf4fd80f7dcecb72b6c83781f5aed463a75b.1695227714.git.aclaudi@redhat.com>
+References: <6a3ecf4fd80f7dcecb72b6c83781f5aed463a75b.1695227714.git.aclaudi@redhat.com>
+From: Andrea Claudi <aclaudi@redhat.com>
+Date: Tue, 5 Sep 2023 12:44:19 +0200
+Subject: [PATCH] lib: add SELinux include and stub functions
+
+Bugzilla: https://bugzilla.redhat.com/show_bug.cgi?id=1780023
+Upstream Status: iproute2-next.git commit e246ebc3
+
+commit e246ebc3b7f1f438310ad6fd1d5976ba6ccf7a69
+Author: Andrea Claudi <aclaudi@redhat.com>
+Date:   Wed Aug 23 19:30:01 2023 +0200
+
+    lib: add SELinux include and stub functions
+
+    ss provides some selinux stub functions, useful when iproute2 is
+    compiled without selinux support.
+
+    Move them to lib/ so we can use them in other iproute2 tools.
+
+    Signed-off-by: Andrea Claudi <aclaudi@redhat.com>
+    Signed-off-by: David Ahern <dsahern@kernel.org>
+---
+ include/selinux.h |  9 +++++++++
+ lib/Makefile      |  4 ++++
+ lib/selinux.c     | 32 ++++++++++++++++++++++++++++++++
+ misc/ss.c         | 34 +---------------------------------
+ 4 files changed, 46 insertions(+), 33 deletions(-)
+ create mode 100644 include/selinux.h
+ create mode 100644 lib/selinux.c
+
+diff --git a/include/selinux.h b/include/selinux.h
+new file mode 100644
+index 00000000..499aa966
+--- /dev/null
++++ b/include/selinux.h
+@@ -0,0 +1,9 @@
++#if HAVE_SELINUX
++#include <selinux/selinux.h>
++#else
++int is_selinux_enabled(void);
++void freecon(char *context);
++int getpidcon(pid_t pid, char **context);
++int getfilecon(const char *path, char **context);
++int security_get_initial_context(const char *name,  char **context);
++#endif
+diff --git a/lib/Makefile b/lib/Makefile
+index ddedd37f..aa7bbd2e 100644
+--- a/lib/Makefile
++++ b/lib/Makefile
+@@ -13,6 +13,10 @@ UTILOBJ += bpf_libbpf.o
+ endif
+ endif
+ 
++ifneq ($(HAVE_SELINUX),y)
++UTILOBJ += selinux.o
++endif
++
+ NLOBJ=libgenl.o libnetlink.o
+ ifeq ($(HAVE_MNL),y)
+ NLOBJ += mnl_utils.o
+diff --git a/lib/selinux.c b/lib/selinux.c
+new file mode 100644
+index 00000000..4e6805fc
+--- /dev/null
++++ b/lib/selinux.c
+@@ -0,0 +1,32 @@
++#include <stdlib.h>
++#include <unistd.h>
++#include "selinux.h"
++
++/* Stubs for SELinux functions */
++int is_selinux_enabled(void)
++{
++	return 0;
++}
++
++void freecon(char *context)
++{
++	free(context);
++}
++
++int getpidcon(pid_t pid, char **context)
++{
++	*context = NULL;
++	return -1;
++}
++
++int getfilecon(const char *path, char **context)
++{
++	*context = NULL;
++	return -1;
++}
++
++int security_get_initial_context(const char *name,  char **context)
++{
++	*context = NULL;
++	return -1;
++}
+diff --git a/misc/ss.c b/misc/ss.c
+index fe19f489..6e18bf0c 100644
+--- a/misc/ss.c
++++ b/misc/ss.c
+@@ -33,6 +33,7 @@
+ #include "version.h"
+ #include "rt_names.h"
+ #include "cg_map.h"
++#include "selinux.h"
+ 
+ #include <linux/tcp.h>
+ #include <linux/unix_diag.h>
+@@ -71,39 +72,6 @@
+ #define BUF_CHUNKS_MAX 5	/* Maximum number of allocated buffer chunks */
+ #define LEN_ALIGN(x) (((x) + 1) & ~1)
+ 
+-#if HAVE_SELINUX
+-#include <selinux/selinux.h>
+-#else
+-/* Stubs for SELinux functions */
+-static int is_selinux_enabled(void)
+-{
+-	return 0;
+-}
+-
+-static int getpidcon(pid_t pid, char **context)
+-{
+-	*context = NULL;
+-	return -1;
+-}
+-
+-static int getfilecon(const char *path, char **context)
+-{
+-	*context = NULL;
+-	return -1;
+-}
+-
+-static int security_get_initial_context(const char *name,  char **context)
+-{
+-	*context = NULL;
+-	return -1;
+-}
+-
+-static void freecon(char *context)
+-{
+-	free(context);
+-}
+-#endif
+-
+ int preferred_family = AF_UNSPEC;
+ static int show_options;
+ int show_details;
+-- 
+2.41.0
+

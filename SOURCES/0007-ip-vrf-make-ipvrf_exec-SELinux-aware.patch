@@ -1,0 +1,81 @@
+From 6bfcc5679d601c393e7d6ca6c78c2d7680c3e4f2 Mon Sep 17 00:00:00 2001
+Message-ID: <6bfcc5679d601c393e7d6ca6c78c2d7680c3e4f2.1695227714.git.aclaudi@redhat.com>
+In-Reply-To: <6a3ecf4fd80f7dcecb72b6c83781f5aed463a75b.1695227714.git.aclaudi@redhat.com>
+References: <6a3ecf4fd80f7dcecb72b6c83781f5aed463a75b.1695227714.git.aclaudi@redhat.com>
+From: Andrea Claudi <aclaudi@redhat.com>
+Date: Tue, 5 Sep 2023 12:44:19 +0200
+Subject: [PATCH] ip vrf: make ipvrf_exec SELinux-aware
+
+Bugzilla: https://bugzilla.redhat.com/show_bug.cgi?id=1780023
+Upstream Status: iproute2-next.git commit 0d0eeaa6
+
+commit 0d0eeaa6cb9218e57ce910fc3a8991b80da6393e
+Author: Andrea Claudi <aclaudi@redhat.com>
+Date:   Wed Aug 23 19:30:02 2023 +0200
+
+    ip vrf: make ipvrf_exec SELinux-aware
+
+    When using ip vrf and SELinux is enabled, make sure to set the exec file
+    context before calling cmd_exec.
+
+    This ensures that the command is executed with the right context,
+    falling back to the ifconfig_t context when needed.
+
+    Signed-off-by: Andrea Claudi <aclaudi@redhat.com>
+    Signed-off-by: David Ahern <dsahern@kernel.org>
+---
+ include/selinux.h | 1 +
+ ip/ipvrf.c        | 6 ++++++
+ lib/selinux.c     | 5 +++++
+ 3 files changed, 12 insertions(+)
+
+diff --git a/include/selinux.h b/include/selinux.h
+index 499aa966..592c7680 100644
+--- a/include/selinux.h
++++ b/include/selinux.h
+@@ -6,4 +6,5 @@ void freecon(char *context);
+ int getpidcon(pid_t pid, char **context);
+ int getfilecon(const char *path, char **context);
+ int security_get_initial_context(const char *name,  char **context);
++int setexecfilecon(const char *filename, const char *fallback_type);
+ #endif
+diff --git a/ip/ipvrf.c b/ip/ipvrf.c
+index 0718bea8..b0dd2abe 100644
+--- a/ip/ipvrf.c
++++ b/ip/ipvrf.c
+@@ -24,6 +24,7 @@
+ #include "utils.h"
+ #include "ip_common.h"
+ #include "bpf_util.h"
++#include "selinux.h"
+ 
+ #define CGRP_PROC_FILE  "/cgroup.procs"
+ 
+@@ -455,6 +456,11 @@ static int ipvrf_exec(int argc, char **argv)
+ 		return -1;
+ 	}
+ 
++	if (is_selinux_enabled() && setexecfilecon(argv[1], "ifconfig_t")) {
++		fprintf(stderr, "setexecfilecon for \"%s\" failed\n", argv[1]);
++		return -1;
++	}
++
+ 	return -cmd_exec(argv[1], argv + 1, !!batch_mode, do_switch, argv[0]);
+ }
+ 
+diff --git a/lib/selinux.c b/lib/selinux.c
+index 4e6805fc..7e5dd16d 100644
+--- a/lib/selinux.c
++++ b/lib/selinux.c
+@@ -30,3 +30,8 @@ int security_get_initial_context(const char *name,  char **context)
+ 	*context = NULL;
+ 	return -1;
+ }
++
++int setexecfilecon(const char *filename, const char *fallback_type)
++{
++	return -1;
++}
+-- 
+2.41.0
+

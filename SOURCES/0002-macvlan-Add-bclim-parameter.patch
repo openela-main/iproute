@@ -1,12 +1,12 @@
-From 61beaa5d73b14afd5df6e8d35cbeb07c54362ed9 Mon Sep 17 00:00:00 2001
-Message-Id: <61beaa5d73b14afd5df6e8d35cbeb07c54362ed9.1686053139.git.aclaudi@redhat.com>
-In-Reply-To: <527ed2d16bbd40b0e519587aeab96af7ed4f61ff.1686053139.git.aclaudi@redhat.com>
-References: <527ed2d16bbd40b0e519587aeab96af7ed4f61ff.1686053139.git.aclaudi@redhat.com>
+From 1638c2909a2911f981ee437dafde70e5e8d721f8 Mon Sep 17 00:00:00 2001
+Message-Id: <1638c2909a2911f981ee437dafde70e5e8d721f8.1683117490.git.aclaudi@redhat.com>
+In-Reply-To: <6a3ecf4fd80f7dcecb72b6c83781f5aed463a75b.1683117490.git.aclaudi@redhat.com>
+References: <6a3ecf4fd80f7dcecb72b6c83781f5aed463a75b.1683117490.git.aclaudi@redhat.com>
 From: Andrea Claudi <aclaudi@redhat.com>
-Date: Tue, 6 Jun 2023 13:18:36 +0200
+Date: Wed, 3 May 2023 11:19:24 +0200
 Subject: [PATCH] macvlan: Add bclim parameter
 
-Bugzilla: https://bugzilla.redhat.com/show_bug.cgi?id=2209687
+Bugzilla: https://bugzilla.redhat.com/show_bug.cgi?id=2188134
 Upstream Status: iproute2-next.git commit e8a3fb47
 
 commit e8a3fb470b4e96aa35a2731c7cc175b946c0a62d
@@ -32,10 +32,10 @@ Date:   Thu Mar 30 11:07:25 2023 +0800
  2 files changed, 42 insertions(+), 2 deletions(-)
 
 diff --git a/ip/iplink_macvlan.c b/ip/iplink_macvlan.c
-index 05e6bc77..6f84724d 100644
+index 0f13637d..6bdc76d1 100644
 --- a/ip/iplink_macvlan.c
 +++ b/ip/iplink_macvlan.c
-@@ -30,13 +30,14 @@
+@@ -26,13 +26,14 @@
  static void print_explain(struct link_util *lu, FILE *f)
  {
  	fprintf(f,
@@ -52,7 +52,7 @@ index 05e6bc77..6f84724d 100644
  		lu->id
  	);
  }
-@@ -71,6 +72,12 @@ static int bc_queue_len_arg(const char *arg)
+@@ -67,6 +68,12 @@ static int bc_queue_len_arg(const char *arg)
  	return -1;
  }
  
@@ -65,7 +65,7 @@ index 05e6bc77..6f84724d 100644
  static int macvlan_parse_opt(struct link_util *lu, int argc, char **argv,
  			  struct nlmsghdr *n)
  {
-@@ -172,6 +179,15 @@ static int macvlan_parse_opt(struct link_util *lu, int argc, char **argv,
+@@ -168,6 +175,15 @@ static int macvlan_parse_opt(struct link_util *lu, int argc, char **argv,
  				return bc_queue_len_arg(*argv);
  			}
  			addattr32(n, 1024, IFLA_MACVLAN_BC_QUEUE_LEN, bc_queue_len);
@@ -81,7 +81,7 @@ index 05e6bc77..6f84724d 100644
  		} else if (matches(*argv, "help") == 0) {
  			explain(lu);
  			return -1;
-@@ -249,6 +265,12 @@ static void macvlan_print_opt(struct link_util *lu, FILE *f, struct rtattr *tb[]
+@@ -245,6 +261,12 @@ static void macvlan_print_opt(struct link_util *lu, FILE *f, struct rtattr *tb[]
  		print_luint(PRINT_ANY, "usedbcqueuelen", "usedbcqueuelen %lu ", bc_queue_len);
  	}
  
@@ -95,10 +95,10 @@ index 05e6bc77..6f84724d 100644
  
  	if (mode != MACVLAN_MODE_SOURCE)
 diff --git a/man/man8/ip-link.8.in b/man/man8/ip-link.8.in
-index ee189abc..6c278c50 100644
+index eeddf493..62aebabd 100644
 --- a/man/man8/ip-link.8.in
 +++ b/man/man8/ip-link.8.in
-@@ -1428,6 +1428,7 @@ the following additional arguments are supported:
+@@ -1455,6 +1455,7 @@ the following additional arguments are supported:
  .BR mode " { " private " | " vepa " | " bridge " | " passthru
  .RB " [ " nopromisc " ] | " source " [ " nodst " ] } "
  .RB " [ " bcqueuelen " { " LENGTH " } ] "
@@ -106,7 +106,7 @@ index ee189abc..6c278c50 100644
  
  .in +8
  .sp
-@@ -1486,6 +1487,13 @@ will be the maximum length that any macvlan interface has requested.
+@@ -1513,6 +1514,13 @@ will be the maximum length that any macvlan interface has requested.
  When listing device parameters both the bcqueuelen parameter
  as well as the actual used bcqueuelen are listed to better help
  the user understand the setting.
@@ -120,7 +120,7 @@ index ee189abc..6c278c50 100644
  .in -8
  
  .TP
-@@ -2591,6 +2599,9 @@ Update the broadcast/multicast queue length.
+@@ -2675,6 +2683,9 @@ Update the broadcast/multicast queue length.
  [
  .BI bcqueuelen "  LENGTH  "
  ]
@@ -130,7 +130,7 @@ index ee189abc..6c278c50 100644
  
  .in +8
  .BI bcqueuelen " LENGTH "
-@@ -2604,6 +2615,13 @@ will be the maximum length that any macvlan interface has requested.
+@@ -2688,6 +2699,13 @@ will be the maximum length that any macvlan interface has requested.
  When listing device parameters both the bcqueuelen parameter
  as well as the actual used bcqueuelen are listed to better help
  the user understand the setting.
@@ -143,7 +143,7 @@ index ee189abc..6c278c50 100644
 +using it is greater than the given value.
  .in -8
  
- .SS  ip link show - display device attributes
+ .TP
 -- 
 2.40.1
 

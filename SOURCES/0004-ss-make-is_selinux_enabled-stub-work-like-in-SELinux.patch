@@ -1,0 +1,55 @@
+From dcff6d4c73cd9c33b4103a4505ecebe6852f63df Mon Sep 17 00:00:00 2001
+Message-ID: <dcff6d4c73cd9c33b4103a4505ecebe6852f63df.1695227714.git.aclaudi@redhat.com>
+In-Reply-To: <6a3ecf4fd80f7dcecb72b6c83781f5aed463a75b.1695227714.git.aclaudi@redhat.com>
+References: <6a3ecf4fd80f7dcecb72b6c83781f5aed463a75b.1695227714.git.aclaudi@redhat.com>
+From: Andrea Claudi <aclaudi@redhat.com>
+Date: Tue, 5 Sep 2023 12:44:19 +0200
+Subject: [PATCH] ss: make is_selinux_enabled stub work like in SELinux
+
+Bugzilla: https://bugzilla.redhat.com/show_bug.cgi?id=1780023
+Upstream Status: iproute2-next.git commit c8970828
+
+commit c8970828b6509af3ab0f2982da335fb6a6c846af
+Author: Andrea Claudi <aclaudi@redhat.com>
+Date:   Wed Aug 23 19:29:59 2023 +0200
+
+    ss: make is_selinux_enabled stub work like in SELinux
+
+    From the is_selinux_enabled() manpage:
+
+    is_selinux_enabled() returns 1 if SELinux is running or 0 if it is not.
+
+    This makes the is_selinux_enabled() stub functions works exactly like
+    the SELinux function it is supposed to replace.
+
+    Signed-off-by: Andrea Claudi <aclaudi@redhat.com>
+    Signed-off-by: David Ahern <dsahern@kernel.org>
+---
+ misc/ss.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/misc/ss.c b/misc/ss.c
+index de02fccb..d2dffbf8 100644
+--- a/misc/ss.c
++++ b/misc/ss.c
+@@ -77,7 +77,7 @@
+ /* Stubs for SELinux functions */
+ static int is_selinux_enabled(void)
+ {
+-	return -1;
++	return 0;
+ }
+ 
+ static int getpidcon(pid_t pid, char **context)
+@@ -5684,7 +5684,7 @@ int main(int argc, char *argv[])
+ 			show_sock_ctx++;
+ 			/* fall through */
+ 		case 'Z':
+-			if (is_selinux_enabled() <= 0) {
++			if (!is_selinux_enabled()) {
+ 				fprintf(stderr, "ss: SELinux is not enabled.\n");
+ 				exit(1);
+ 			}
+-- 
+2.41.0
+

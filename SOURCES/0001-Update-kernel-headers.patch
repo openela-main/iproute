@@ -1,10 +1,10 @@
-From 527ed2d16bbd40b0e519587aeab96af7ed4f61ff Mon Sep 17 00:00:00 2001
-Message-Id: <527ed2d16bbd40b0e519587aeab96af7ed4f61ff.1686053139.git.aclaudi@redhat.com>
+From 6a3ecf4fd80f7dcecb72b6c83781f5aed463a75b Mon Sep 17 00:00:00 2001
+Message-Id: <6a3ecf4fd80f7dcecb72b6c83781f5aed463a75b.1683117490.git.aclaudi@redhat.com>
 From: Andrea Claudi <aclaudi@redhat.com>
-Date: Tue, 6 Jun 2023 13:18:36 +0200
+Date: Wed, 3 May 2023 11:19:24 +0200
 Subject: [PATCH] Update kernel headers
 
-Bugzilla: https://bugzilla.redhat.com/show_bug.cgi?id=2209687
+Bugzilla: https://bugzilla.redhat.com/show_bug.cgi?id=2188134
 Upstream Status: iproute2-next.git commit 88786cd1
 
 commit 88786cd1a96a89427bc22061c7736eb2eac31121
@@ -22,10 +22,10 @@ Date:   Thu Mar 30 09:43:49 2023 -0600
  1 file changed, 1 insertion(+)
 
 diff --git a/include/uapi/linux/if_link.h b/include/uapi/linux/if_link.h
-index 22e21e57..e3544afe 100644
+index 147ad0a3..644d3554 100644
 --- a/include/uapi/linux/if_link.h
 +++ b/include/uapi/linux/if_link.h
-@@ -617,6 +617,7 @@ enum {
+@@ -628,6 +628,7 @@ enum {
  	IFLA_MACVLAN_MACADDR_COUNT,
  	IFLA_MACVLAN_BC_QUEUE_LEN,
  	IFLA_MACVLAN_BC_QUEUE_LEN_USED,
