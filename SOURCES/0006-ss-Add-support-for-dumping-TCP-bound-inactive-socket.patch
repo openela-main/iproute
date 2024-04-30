@@ -1,0 +1,158 @@
+From 17643a7c829e92859146e5d0f8b83e19d99b2592 Mon Sep 17 00:00:00 2001
+Message-ID: <17643a7c829e92859146e5d0f8b83e19d99b2592.1709652372.git.aclaudi@redhat.com>
+In-Reply-To: <d60a7ac3c0f6aa2a933f48a69ab31e3637f6906c.1709652372.git.aclaudi@redhat.com>
+References: <d60a7ac3c0f6aa2a933f48a69ab31e3637f6906c.1709652372.git.aclaudi@redhat.com>
+From: Andrea Claudi <aclaudi@redhat.com>
+Date: Mon, 4 Mar 2024 23:23:27 +0100
+Subject: [PATCH] ss: Add support for dumping TCP bound-inactive sockets.
+
+JIRA: https://issues.redhat.com/browse/RHEL-21017
+Upstream Status: iproute2.git commit ae447da64975ad02e40a93ccbc440a6477af96c0
+
+commit ae447da64975ad02e40a93ccbc440a6477af96c0
+Author: Guillaume Nault <gnault@redhat.com>
+Date:   Tue Dec 19 14:18:13 2023 +0100
+
+    ss: Add support for dumping TCP bound-inactive sockets.
+
+    Make ss aware of the new "bound-inactive" pseudo-state for TCP (see
+    Linux commit 91051f003948 ("tcp: Dump bound-only sockets in inet_diag.")).
+    These are TCP sockets that have been bound, but are neither listening nor
+    connecting.
+
+    With this patch, these sockets can now be dumped with:
+
+      * the existing -a (--all) option, to dump all sockets, including
+        bound-inactive ones,
+
+      * the new -B (--bound-inactive) option, to dump them exclusively,
+
+      * the new "bound-inactive" state, to be used in a STATE-FILTER.
+
+    Note that the SS_BOUND_INACTIVE state is a pseudo-state used for queries
+    only. The kernel returns them as SS_CLOSE.
+
+    The SS_NEW_SYN_RECV pseudo-state is added in this patch only because we
+    have to set its entry in the sstate_namel array (in scan_state()). Care
+    is taken not to make it visible by users.
+
+    Signed-off-by: Guillaume Nault <gnault@redhat.com>
+    Signed-off-by: David Ahern <dsahern@kernel.org>
+
+Signed-off-by: Andrea Claudi <aclaudi@redhat.com>
+---
+ man/man8/ss.8 |  7 +++++++
+ misc/ss.c     | 20 +++++++++++++++++++-
+ 2 files changed, 26 insertions(+), 1 deletion(-)
+
+diff --git a/man/man8/ss.8 b/man/man8/ss.8
+index d413e570..2bc42b85 100644
+--- a/man/man8/ss.8
++++ b/man/man8/ss.8
+@@ -40,6 +40,10 @@ established connections) sockets.
+ .B \-l, \-\-listening
+ Display only listening sockets (these are omitted by default).
+ .TP
++.B \-B, \-\-bound-inactive
++Display only TCP bound but inactive (not listening, connecting, etc.) sockets
++(these are omitted by default).
++.TP
+ .B \-o, \-\-options
+ Show timer information. For TCP protocol, the output format is:
+ .RS
+@@ -458,6 +462,9 @@ states except for
+ - opposite to
+ .B bucket
+ 
++.B bound-inactive
++- bound but otherwise inactive sockets (not listening, connecting, etc.)
++
+ .SH EXPRESSION
+ 
+ .B EXPRESSION
+diff --git a/misc/ss.c b/misc/ss.c
+index de02fccb..6a9cbac0 100644
+--- a/misc/ss.c
++++ b/misc/ss.c
+@@ -242,6 +242,8 @@ enum {
+ 	SS_LAST_ACK,
+ 	SS_LISTEN,
+ 	SS_CLOSING,
++	SS_NEW_SYN_RECV, /* Kernel only value, not for use in user space */
++	SS_BOUND_INACTIVE,
+ 	SS_MAX
+ };
+ 
+@@ -1409,6 +1411,8 @@ static void sock_state_print(struct sockstat *s)
+ 		[SS_LAST_ACK] = "LAST-ACK",
+ 		[SS_LISTEN] =	"LISTEN",
+ 		[SS_CLOSING] = "CLOSING",
++		[SS_NEW_SYN_RECV] = "UNDEF", /* Never returned by kernel */
++		[SS_BOUND_INACTIVE] = "UNDEF", /* Never returned by kernel */
+ 	};
+ 
+ 	switch (s->local.family) {
+@@ -5342,6 +5346,7 @@ static void _usage(FILE *dest)
+ "   -r, --resolve       resolve host names\n"
+ "   -a, --all           display all sockets\n"
+ "   -l, --listening     display listening sockets\n"
++"   -B, --bound-inactive display TCP bound but inactive sockets\n"
+ "   -o, --options       show timer information\n"
+ "   -e, --extended      show detailed socket information\n"
+ "   -m, --memory        show socket memory usage\n"
+@@ -5424,9 +5429,17 @@ static int scan_state(const char *state)
+ 		[SS_LAST_ACK] = "last-ack",
+ 		[SS_LISTEN] =	"listening",
+ 		[SS_CLOSING] = "closing",
++		[SS_NEW_SYN_RECV] = "new-syn-recv",
++		[SS_BOUND_INACTIVE] = "bound-inactive",
+ 	};
+ 	int i;
+ 
++	/* NEW_SYN_RECV is a kernel implementation detail. It shouldn't be used
++	 * or even be visible by users.
++	 */
++	if (strcasecmp(state, "new-syn-recv") == 0)
++		goto wrong_state;
++
+ 	if (strcasecmp(state, "close") == 0 ||
+ 	    strcasecmp(state, "closed") == 0)
+ 		return (1<<SS_CLOSE);
+@@ -5449,6 +5462,7 @@ static int scan_state(const char *state)
+ 			return (1<<i);
+ 	}
+ 
++wrong_state:
+ 	fprintf(stderr, "ss: wrong state name: %s\n", state);
+ 	exit(-1);
+ }
+@@ -5490,6 +5504,7 @@ static const struct option long_opts[] = {
+ 	{ "vsock", 0, 0, OPT_VSOCK },
+ 	{ "all", 0, 0, 'a' },
+ 	{ "listening", 0, 0, 'l' },
++	{ "bound-inactive", 0, 0, 'B' },
+ 	{ "ipv4", 0, 0, '4' },
+ 	{ "ipv6", 0, 0, '6' },
+ 	{ "packet", 0, 0, '0' },
+@@ -5528,7 +5543,7 @@ int main(int argc, char *argv[])
+ 	int state_filter = 0;
+ 
+ 	while ((ch = getopt_long(argc, argv,
+-				 "dhaletuwxnro460spTbEf:mMiA:D:F:vVzZN:KHSO",
++				 "dhalBetuwxnro460spTbEf:mMiA:D:F:vVzZN:KHSO",
+ 				 long_opts, NULL)) != EOF) {
+ 		switch (ch) {
+ 		case 'n':
+@@ -5593,6 +5608,9 @@ int main(int argc, char *argv[])
+ 		case 'l':
+ 			state_filter = (1 << SS_LISTEN) | (1 << SS_CLOSE);
+ 			break;
++		case 'B':
++			state_filter = 1 << SS_BOUND_INACTIVE;
++			break;
+ 		case '4':
+ 			filter_af_set(&current_filter, AF_INET);
+ 			break;
+-- 
+2.44.0
+

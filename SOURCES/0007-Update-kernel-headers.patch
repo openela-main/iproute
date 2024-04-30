@@ -1,0 +1,233 @@
+From 92a7cd1de2b2137d8d3279ee32f9b0548d6f4894 Mon Sep 17 00:00:00 2001
+Message-ID: <92a7cd1de2b2137d8d3279ee32f9b0548d6f4894.1709652372.git.aclaudi@redhat.com>
+In-Reply-To: <d60a7ac3c0f6aa2a933f48a69ab31e3637f6906c.1709652372.git.aclaudi@redhat.com>
+References: <d60a7ac3c0f6aa2a933f48a69ab31e3637f6906c.1709652372.git.aclaudi@redhat.com>
+From: Andrea Claudi <aclaudi@redhat.com>
+Date: Mon, 4 Mar 2024 23:37:51 +0100
+Subject: [PATCH] Update kernel headers
+
+JIRA: https://issues.redhat.com/browse/RHEL-579
+Upstream Status: iproute2.git commit 94aeaf9cb12c88afa8fba8027a0e714aa4fec841
+
+commit 94aeaf9cb12c88afa8fba8027a0e714aa4fec841
+Author: David Ahern <dsahern@kernel.org>
+Date:   Tue Feb 7 09:09:29 2023 -0700
+
+    Update kernel headers
+
+    Update kernel headers to commit:
+        61d731e6538d ("Merge tag 'linux-can-next-for-6.3-20230206' of git://git.kernel.org/pub/scm/linux/kernel/git/mkl/linux-can-next")
+
+    Signed-off-by: David Ahern <dsahern@kernel.org>
+
+Signed-off-by: Andrea Claudi <aclaudi@redhat.com>
+---
+ include/uapi/linux/bpf.h       | 12 ++++++++
+ include/uapi/linux/fou.h       | 54 ++++++++++++++++------------------
+ include/uapi/linux/if_bridge.h |  2 ++
+ include/uapi/linux/if_link.h   |  5 ++++
+ include/uapi/linux/if_packet.h |  1 +
+ include/uapi/linux/in.h        |  1 +
+ include/uapi/linux/snmp.h      |  3 ++
+ 7 files changed, 50 insertions(+), 28 deletions(-)
+
+diff --git a/include/uapi/linux/bpf.h b/include/uapi/linux/bpf.h
+index a667908d..4abb4c73 100644
+--- a/include/uapi/linux/bpf.h
++++ b/include/uapi/linux/bpf.h
+@@ -1156,6 +1156,11 @@ enum bpf_link_type {
+  */
+ #define BPF_F_XDP_HAS_FRAGS	(1U << 5)
+ 
++/* If BPF_F_XDP_DEV_BOUND_ONLY is used in BPF_PROG_LOAD command, the loaded
++ * program becomes device-bound but can access XDP metadata.
++ */
++#define BPF_F_XDP_DEV_BOUND_ONLY	(1U << 6)
++
+ /* link_create.kprobe_multi.flags used in LINK_CREATE command for
+  * BPF_TRACE_KPROBE_MULTI attach type to create return probe.
+  */
+@@ -2644,6 +2649,11 @@ union bpf_attr {
+  *		  Use with BPF_F_ADJ_ROOM_ENCAP_L2 flag to further specify the
+  *		  L2 type as Ethernet.
+  *
++ *		* **BPF_F_ADJ_ROOM_DECAP_L3_IPV4**,
++ *		  **BPF_F_ADJ_ROOM_DECAP_L3_IPV6**:
++ *		  Indicate the new IP header version after decapsulating the outer
++ *		  IP header. Used when the inner and outer IP versions are different.
++ *
+  * 		A call to this helper is susceptible to change the underlying
+  * 		packet buffer. Therefore, at load time, all checks on pointers
+  * 		previously done by the verifier are invalidated and must be
+@@ -5803,6 +5813,8 @@ enum {
+ 	BPF_F_ADJ_ROOM_ENCAP_L4_UDP	= (1ULL << 4),
+ 	BPF_F_ADJ_ROOM_NO_CSUM_RESET	= (1ULL << 5),
+ 	BPF_F_ADJ_ROOM_ENCAP_L2_ETH	= (1ULL << 6),
++	BPF_F_ADJ_ROOM_DECAP_L3_IPV4	= (1ULL << 7),
++	BPF_F_ADJ_ROOM_DECAP_L3_IPV6	= (1ULL << 8),
+ };
+ 
+ enum {
+diff --git a/include/uapi/linux/fou.h b/include/uapi/linux/fou.h
+index 9f915118..5a7b959b 100644
+--- a/include/uapi/linux/fou.h
++++ b/include/uapi/linux/fou.h
+@@ -1,32 +1,37 @@
+ /* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
+-/* fou.h - FOU Interface */
++/* Do not edit directly, auto-generated from: */
++/*	Documentation/netlink/specs/fou.yaml */
++/* YNL-GEN uapi header */
+ 
+ #ifndef _LINUX_FOU_H
+ #define _LINUX_FOU_H
+ 
+-/* NETLINK_GENERIC related info
+- */
+ #define FOU_GENL_NAME		"fou"
+-#define FOU_GENL_VERSION	0x1
++#define FOU_GENL_VERSION	1
+ 
+ enum {
+-	FOU_ATTR_UNSPEC,
+-	FOU_ATTR_PORT,				/* u16 */
+-	FOU_ATTR_AF,				/* u8 */
+-	FOU_ATTR_IPPROTO,			/* u8 */
+-	FOU_ATTR_TYPE,				/* u8 */
+-	FOU_ATTR_REMCSUM_NOPARTIAL,		/* flag */
+-	FOU_ATTR_LOCAL_V4,			/* u32 */
+-	FOU_ATTR_LOCAL_V6,			/* in6_addr */
+-	FOU_ATTR_PEER_V4,			/* u32 */
+-	FOU_ATTR_PEER_V6,			/* in6_addr */
+-	FOU_ATTR_PEER_PORT,			/* u16 */
+-	FOU_ATTR_IFINDEX,			/* s32 */
+-
+-	__FOU_ATTR_MAX,
++	FOU_ENCAP_UNSPEC,
++	FOU_ENCAP_DIRECT,
++	FOU_ENCAP_GUE,
+ };
+ 
+-#define FOU_ATTR_MAX		(__FOU_ATTR_MAX - 1)
++enum {
++	FOU_ATTR_UNSPEC,
++	FOU_ATTR_PORT,
++	FOU_ATTR_AF,
++	FOU_ATTR_IPPROTO,
++	FOU_ATTR_TYPE,
++	FOU_ATTR_REMCSUM_NOPARTIAL,
++	FOU_ATTR_LOCAL_V4,
++	FOU_ATTR_LOCAL_V6,
++	FOU_ATTR_PEER_V4,
++	FOU_ATTR_PEER_V6,
++	FOU_ATTR_PEER_PORT,
++	FOU_ATTR_IFINDEX,
++
++	__FOU_ATTR_MAX
++};
++#define FOU_ATTR_MAX (__FOU_ATTR_MAX - 1)
+ 
+ enum {
+ 	FOU_CMD_UNSPEC,
+@@ -34,15 +39,8 @@ enum {
+ 	FOU_CMD_DEL,
+ 	FOU_CMD_GET,
+ 
+-	__FOU_CMD_MAX,
++	__FOU_CMD_MAX
+ };
+-
+-enum {
+-	FOU_ENCAP_UNSPEC,
+-	FOU_ENCAP_DIRECT,
+-	FOU_ENCAP_GUE,
+-};
+-
+-#define FOU_CMD_MAX	(__FOU_CMD_MAX - 1)
++#define FOU_CMD_MAX (__FOU_CMD_MAX - 1)
+ 
+ #endif /* _LINUX_FOU_H */
+diff --git a/include/uapi/linux/if_bridge.h b/include/uapi/linux/if_bridge.h
+index 4a887cf4..921b212d 100644
+--- a/include/uapi/linux/if_bridge.h
++++ b/include/uapi/linux/if_bridge.h
+@@ -523,6 +523,8 @@ enum {
+ 	BRIDGE_VLANDB_ENTRY_TUNNEL_INFO,
+ 	BRIDGE_VLANDB_ENTRY_STATS,
+ 	BRIDGE_VLANDB_ENTRY_MCAST_ROUTER,
++	BRIDGE_VLANDB_ENTRY_MCAST_N_GROUPS,
++	BRIDGE_VLANDB_ENTRY_MCAST_MAX_GROUPS,
+ 	__BRIDGE_VLANDB_ENTRY_MAX,
+ };
+ #define BRIDGE_VLANDB_ENTRY_MAX (__BRIDGE_VLANDB_ENTRY_MAX - 1)
+diff --git a/include/uapi/linux/if_link.h b/include/uapi/linux/if_link.h
+index 644d3554..71ddffc6 100644
+--- a/include/uapi/linux/if_link.h
++++ b/include/uapi/linux/if_link.h
+@@ -374,6 +374,9 @@ enum {
+ 
+ 	IFLA_DEVLINK_PORT,
+ 
++	IFLA_GSO_IPV4_MAX_SIZE,
++	IFLA_GRO_IPV4_MAX_SIZE,
++
+ 	__IFLA_MAX
+ };
+ 
+@@ -562,6 +565,8 @@ enum {
+ 	IFLA_BRPORT_MCAST_EHT_HOSTS_CNT,
+ 	IFLA_BRPORT_LOCKED,
+ 	IFLA_BRPORT_MAB,
++	IFLA_BRPORT_MCAST_N_GROUPS,
++	IFLA_BRPORT_MCAST_MAX_GROUPS,
+ 	__IFLA_BRPORT_MAX
+ };
+ #define IFLA_BRPORT_MAX (__IFLA_BRPORT_MAX - 1)
+diff --git a/include/uapi/linux/if_packet.h b/include/uapi/linux/if_packet.h
+index a8516b35..78c981d6 100644
+--- a/include/uapi/linux/if_packet.h
++++ b/include/uapi/linux/if_packet.h
+@@ -115,6 +115,7 @@ struct tpacket_auxdata {
+ #define TP_STATUS_BLK_TMO		(1 << 5)
+ #define TP_STATUS_VLAN_TPID_VALID	(1 << 6) /* auxdata has valid tp_vlan_tpid */
+ #define TP_STATUS_CSUM_VALID		(1 << 7)
++#define TP_STATUS_GSO_TCP		(1 << 8)
+ 
+ /* Tx ring - header status */
+ #define TP_STATUS_AVAILABLE	      0
+diff --git a/include/uapi/linux/in.h b/include/uapi/linux/in.h
+index dccf0791..c087f0a2 100644
+--- a/include/uapi/linux/in.h
++++ b/include/uapi/linux/in.h
+@@ -162,6 +162,7 @@ struct in_addr {
+ #define MCAST_MSFILTER			48
+ #define IP_MULTICAST_ALL		49
+ #define IP_UNICAST_IF			50
++#define IP_LOCAL_PORT_RANGE		51
+ 
+ #define MCAST_EXCLUDE	0
+ #define MCAST_INCLUDE	1
+diff --git a/include/uapi/linux/snmp.h b/include/uapi/linux/snmp.h
+index 6600cb01..26f33a4c 100644
+--- a/include/uapi/linux/snmp.h
++++ b/include/uapi/linux/snmp.h
+@@ -95,6 +95,8 @@ enum
+ 	ICMP_MIB_OUTADDRMASKS,			/* OutAddrMasks */
+ 	ICMP_MIB_OUTADDRMASKREPS,		/* OutAddrMaskReps */
+ 	ICMP_MIB_CSUMERRORS,			/* InCsumErrors */
++	ICMP_MIB_RATELIMITGLOBAL,		/* OutRateLimitGlobal */
++	ICMP_MIB_RATELIMITHOST,			/* OutRateLimitHost */
+ 	__ICMP_MIB_MAX
+ };
+ 
+@@ -112,6 +114,7 @@ enum
+ 	ICMP6_MIB_OUTMSGS,			/* OutMsgs */
+ 	ICMP6_MIB_OUTERRORS,			/* OutErrors */
+ 	ICMP6_MIB_CSUMERRORS,			/* InCsumErrors */
++	ICMP6_MIB_RATELIMITHOST,		/* OutRateLimitHost */
+ 	__ICMP6_MIB_MAX
+ };
+ 
+-- 
+2.44.0
+

@@ -1,0 +1,54 @@
+From c7160bde79189ba8674acb6355771fb91b6eca28 Mon Sep 17 00:00:00 2001
+Message-ID: <c7160bde79189ba8674acb6355771fb91b6eca28.1709652372.git.aclaudi@redhat.com>
+In-Reply-To: <d60a7ac3c0f6aa2a933f48a69ab31e3637f6906c.1709652372.git.aclaudi@redhat.com>
+References: <d60a7ac3c0f6aa2a933f48a69ab31e3637f6906c.1709652372.git.aclaudi@redhat.com>
+From: Andrea Claudi <aclaudi@redhat.com>
+Date: Mon, 4 Mar 2024 23:37:51 +0100
+Subject: [PATCH] man: ip-link.8: add a note for gso_ipv4_max_size
+
+JIRA: https://issues.redhat.com/browse/RHEL-579
+Upstream Status: iproute2-next.git commit 1d7f908103be90e8ac836ef0ce03b72997664b5a
+
+commit 1d7f908103be90e8ac836ef0ce03b72997664b5a
+Author: Xin Long <lucien.xin@gmail.com>
+Date:   Mon Feb 19 14:16:04 2024 -0500
+
+    man: ip-link.8: add a note for gso_ipv4_max_size
+
+    As Paolo noticed, a skb->len check against gso_max_size was added in:
+
+      https://lore.kernel.org/netdev/20231219125331.4127498-1-edumazet@google.com/
+
+    gso_max_size needs to be set to a value greater than or equal to
+    gso_ipv4_max_size to make BIG TCP IPv4 work properly.
+
+    To not break the current setup, this patch just adds a note into its
+    man doc for this.
+
+    Reported-by: Xiumei Mu <xmu@redhat.com>
+    Signed-off-by: Xin Long <lucien.xin@gmail.com>
+
+Signed-off-by: Andrea Claudi <aclaudi@redhat.com>
+---
+ man/man8/ip-link.8.in | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/man/man8/ip-link.8.in b/man/man8/ip-link.8.in
+index bec1b78b..b90d56c2 100644
+--- a/man/man8/ip-link.8.in
++++ b/man/man8/ip-link.8.in
+@@ -441,6 +441,11 @@ TCP for IPv6 on this device when the size is greater than 65536.
+ specifies the recommended maximum size of a IPv4 Generic Segment Offload
+ packet the new device should accept. This is especially used to enable
+ BIG TCP for IPv4 on this device by setting to a size greater than 65536.
++Note that
++.B gso_max_size
++needs to be set to a size greater than or equal to
++.B gso_ipv4_max_size
++to really enable BIG TCP for IPv4.
+ 
+ .TP
+ .BI gso_max_segs " SEGMENTS "
+-- 
+2.44.0
+

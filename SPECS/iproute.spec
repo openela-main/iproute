@@ -1,7 +1,7 @@
 Summary:            Advanced IP routing and network device configuration tools
 Name:               iproute
 Version:            6.2.0
-Release:            5%{?dist}%{?buildid}
+Release:            6%{?dist}%{?buildid}
 %if 0%{?rhel}
 Group:              Applications/System
 %endif
@@ -13,6 +13,10 @@ Patch1:             0002-macvlan-Add-bclim-parameter.patch
 Patch2:             0003-mptcp-add-support-for-implicit-flag.patch
 Patch3:             0004-u32-fix-TC_U32_TERMINAL-printing.patch
 Patch4:             0005-tc-add-missing-separator.patch
+Patch5:             0006-ss-Add-support-for-dumping-TCP-bound-inactive-socket.patch
+Patch6:             0007-Update-kernel-headers.patch
+Patch7:             0008-iplink-add-gso-and-gro-max_size-attributes-for-ipv4.patch
+Patch8:             0009-man-ip-link.8-add-a-note-for-gso_ipv4_max_size.patch
 
 License:            GPL-2.0-or-later AND NIST-PD
 BuildRequires:      bison
@@ -144,9 +148,18 @@ cat %{SOURCE1} >>%{buildroot}%{_sysconfdir}/iproute2/rt_dsfield
 %{_includedir}/iproute2/bpf_elf.h
 
 %changelog
+* Fri Mar 08 2024 Andrea Claudi <aclaudi@redhat.com> - 6.2.0-6.el9
+- Fix nvr for rhel-9.4 GA (Andrea Claudi)
+
+* Tue Mar 05 2024 Andrea Claudi <aclaudi@redhat.com> - 6.2.0-5.1.el9
+- man: ip-link.8: add a note for gso_ipv4_max_size (Andrea Claudi)
+- iplink: add gso and gro max_size attributes for ipv4 (Andrea Claudi)
+- Update kernel headers (Andrea Claudi)
+- ss: Add support for dumping TCP bound-inactive sockets. (Andrea Claudi)
+
 * Tue Jun 06 2023 Andrea Claudi <aclaudi@redhat.com> - 6.2.0-5.el9
-- tc: add missing separator (Andrea Claudi) [RHEL-337]
-- u32: fix TC_U32_TERMINAL printing (Andrea Claudi) [RHEL-586]
+- tc: add missing separator (Andrea Claudi)
+- u32: fix TC_U32_TERMINAL printing (Andrea Claudi)
 
 * Mon Jun 05 2023 Andrea Claudi <aclaudi@redhat.com> - 6.2.0-4.el9
 - Fix NVR, %autorelease not working (Andrea Claudi)
