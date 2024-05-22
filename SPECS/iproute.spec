@@ -1,7 +1,7 @@
 Summary:            Advanced IP routing and network device configuration tools
 Name:               iproute
 Version:            6.2.0
-Release:            5%{?dist}%{?buildid}
+Release:            6%{?dist}%{?buildid}
 %if 0%{?rhel}
 Group:              Applications/System
 %endif
@@ -15,6 +15,7 @@ Patch3:             0004-ss-make-is_selinux_enabled-stub-work-like-in-SELinux.pa
 Patch4:             0005-ss-make-SELinux-stub-functions-conformant-to-API-def.patch
 Patch5:             0006-lib-add-SELinux-include-and-stub-functions.patch
 Patch6:             0007-ip-vrf-make-ipvrf_exec-SELinux-aware.patch
+Patch7:             0008-ss-Add-support-for-dumping-TCP-bound-inactive-socket.patch
 
 License:            GPL-2.0-or-later AND NIST-PD
 BuildRequires:      bison
@@ -146,6 +147,9 @@ cat %{SOURCE1} >>%{buildroot}%{_sysconfdir}/iproute2/rt_dsfield
 %{_includedir}/iproute2/bpf_elf.h
 
 %changelog
+* Thu Mar 14 2024 Andrea Claudi <aclaudi@redhat.com> - 6.2.0-6.el8
+- ss: Add support for dumping TCP bound-inactive sockets. (Andrea Claudi)
+
 * Mon Sep 25 2023 Andrea Claudi <aclaudi@redhat.com> - 6.2.0-5.el8
 - Bump version number (wrong exception build)
 
