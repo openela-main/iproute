@@ -1,0 +1,68 @@
+From 7f2e9f746e820e43bafc4ecee18c33a7b6bf5d48 Mon Sep 17 00:00:00 2001
+Message-ID: <7f2e9f746e820e43bafc4ecee18c33a7b6bf5d48.1769541298.git.aclaudi@redhat.com>
+From: Andrea Claudi <aclaudi@redhat.com>
+Date: Tue, 27 Jan 2026 19:59:11 +0100
+Subject: [PATCH] lib: Move mnlg to lib for shared use
+
+JIRA: https://issues.redhat.com/browse/RHEL-131661
+Upstream Status: iproute2.git commit 0d61015ba9910
+
+commit 0d61015ba9910b128db2d7b455056093755e21f9
+Author: Petr Oros <poros@redhat.com>
+Date:   Tue Nov 18 15:10:29 2025 +0100
+
+    lib: Move mnlg to lib for shared use
+
+    Move mnlg.c to lib/ and mnlg.h to include/ to allow code reuse
+    across multiple tools.
+
+    Signed-off-by: Petr Oros <poros@redhat.com>
+    Signed-off-by: David Ahern <dsahern@kernel.org>
+
+Signed-off-by: Andrea Claudi <aclaudi@redhat.com>
+---
+ devlink/Makefile            | 2 +-
+ {devlink => include}/mnlg.h | 0
+ lib/Makefile                | 2 +-
+ {devlink => lib}/mnlg.c     | 0
+ 4 files changed, 2 insertions(+), 2 deletions(-)
+ rename {devlink => include}/mnlg.h (100%)
+ rename {devlink => lib}/mnlg.c (100%)
+
+diff --git a/devlink/Makefile b/devlink/Makefile
+index 1a1eed7e..ec62f0c6 100644
+--- a/devlink/Makefile
++++ b/devlink/Makefile
+@@ -1,7 +1,7 @@
+ # SPDX-License-Identifier: GPL-2.0
+ include ../config.mk
+ 
+-DEVLINKOBJ = devlink.o mnlg.o
++DEVLINKOBJ = devlink.o
+ TARGETS += devlink
+ LDLIBS += -lm
+ 
+diff --git a/devlink/mnlg.h b/include/mnlg.h
+similarity index 100%
+rename from devlink/mnlg.h
+rename to include/mnlg.h
+diff --git a/lib/Makefile b/lib/Makefile
+index 0ba62942..340c37bc 100644
+--- a/lib/Makefile
++++ b/lib/Makefile
+@@ -20,7 +20,7 @@ endif
+ 
+ NLOBJ=libgenl.o libnetlink.o
+ ifeq ($(HAVE_MNL),y)
+-NLOBJ += mnl_utils.o
++NLOBJ += mnl_utils.o mnlg.o
+ endif
+ 
+ all: libnetlink.a libutil.a
+diff --git a/devlink/mnlg.c b/lib/mnlg.c
+similarity index 100%
+rename from devlink/mnlg.c
+rename to lib/mnlg.c
+-- 
+2.52.0
+
