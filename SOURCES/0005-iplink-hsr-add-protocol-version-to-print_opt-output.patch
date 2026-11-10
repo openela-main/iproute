@@ -1,0 +1,48 @@
+From 57b4df5f2b1c1daab5491f6cfd80f3b0f2b94880 Mon Sep 17 00:00:00 2001
+Message-ID: <57b4df5f2b1c1daab5491f6cfd80f3b0f2b94880.1770740675.git.aclaudi@redhat.com>
+In-Reply-To: <7f2e9f746e820e43bafc4ecee18c33a7b6bf5d48.1770740675.git.aclaudi@redhat.com>
+References: <7f2e9f746e820e43bafc4ecee18c33a7b6bf5d48.1770740675.git.aclaudi@redhat.com>
+From: Andrea Claudi <aclaudi@redhat.com>
+Date: Tue, 10 Feb 2026 17:23:01 +0100
+Subject: [PATCH] iplink: hsr: add protocol version to print_opt output
+
+JIRA: https://issues.redhat.com/browse/RHEL-134979
+Upstream Status: iproute2.git commit d6bf24a060537
+
+commit d6bf24a0605373346e8a6cdff5dd67e7160c5c9b
+Author: Jan Vaclav <jvaclav@redhat.com>
+Date:   Mon Oct 27 14:52:06 2025 +0100
+
+    iplink: hsr: add protocol version to print_opt output
+
+    Since this attribute is now exposed by kernel in net-next[1],
+    let's also add it here, so that it can be inspected from
+    userspace.
+
+    [1] https://git.kernel.org/pub/scm/linux/kernel/git/netdev/net-next.git/commit/?id=16a2206354d1
+
+    Signed-off-by: Jan Vaclav <jvaclav@redhat.com>
+    Signed-off-by: David Ahern <dsahern@kernel.org>
+
+Signed-off-by: Andrea Claudi <aclaudi@redhat.com>
+---
+ ip/iplink_hsr.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/ip/iplink_hsr.c b/ip/iplink_hsr.c
+index 42adb430..d79a4a40 100644
+--- a/ip/iplink_hsr.c
++++ b/ip/iplink_hsr.c
+@@ -165,6 +165,9 @@ static void hsr_print_opt(struct link_util *lu, FILE *f, struct rtattr *tb[])
+ 	if (tb[IFLA_HSR_PROTOCOL])
+ 		print_hhu(PRINT_ANY, "proto", "proto %hhu ",
+ 			  rta_getattr_u8(tb[IFLA_HSR_PROTOCOL]));
++	if (tb[IFLA_HSR_VERSION])
++		print_hhu(PRINT_ANY, "version", "version %hhu ",
++			  rta_getattr_u8(tb[IFLA_HSR_VERSION]));
+ }
+ 
+ static void hsr_print_help(struct link_util *lu, int argc, char **argv,
+-- 
+2.53.0
+
